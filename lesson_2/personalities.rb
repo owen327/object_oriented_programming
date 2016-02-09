@@ -91,7 +91,7 @@ class Computer < Player
     when 'Sonny'
       if (1..40).include?(num)
         mv = 'scissors'
-      elsif (40..80).include?(num)
+      elsif (41..80).include?(num)
         mv = 'rock'
       else
         mv = 'paper'

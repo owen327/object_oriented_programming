@@ -3,12 +3,6 @@ class Move
 
   attr_reader :value
 
-  def initialize(value)
-    @value = Rock.allocate if value == 'rock'
-    @value = Paper.allocate if value == 'paper'
-    @value = Scissors.allocate if value == 'scissors'
-  end
-
   def scissors?
     self.class == Scissors
   end
@@ -22,11 +16,15 @@ class Move
   end
 
   def to_s
-    @value.class.to_s
+    @value
   end
 end
 
 class Rock < Move
+  def initialize
+    @value = 'rock'
+  end
+
   def >(other_move)
     other_move.scissors?
   end
@@ -37,6 +35,10 @@ class Rock < Move
 end
 
 class Paper < Move
+  def initialize
+    @value = 'paper'
+  end
+
   def >(other_move)
     other_move.rock?
   end
@@ -47,6 +49,10 @@ class Paper < Move
 end
 
 class Scissors < Move
+  def initialize
+    @value = 'scissors'
+  end
+
   def >(other_move)
     other_move.paper?
   end
@@ -61,6 +67,14 @@ class Player
 
   def initialize
     set_name
+  end
+
+  def set_move(choice)
+    self.move = case choice
+                when 'rock' then Rock.new
+                when 'paper' then Paper.new
+                when 'scissors' then Scissors.new
+                end
   end
 end
 
@@ -84,7 +98,7 @@ class Human < Player
       break if Move::VALUES.include? choice
       puts "Sorry, invalid choice."
     end
-    self.move = Move.new(choice)
+    set_move(choice)
   end
 end
 
@@ -94,7 +108,8 @@ class Computer < Player
   end
 
   def choose
-    self.move = Move.new(Move::VALUES.sample)
+    choice = Move::VALUES.sample
+    set_move(choice)
   end
 end
 
@@ -121,9 +136,9 @@ class RPSGame
   end
 
   def display_winner
-    if human.move.value > computer.move.value
+    if human.move > computer.move
       puts "#{human.name} won!"
-    elsif human.move.value < computer.move.value
+    elsif human.move < computer.move
       puts "#{computer.name} won!"
     else
       puts "It's a tie!"
