@@ -161,36 +161,6 @@ class Computer < Player
   end
 
   def choose_by_personality
-    num = Random.new.rand(100) + 1
-    case name
-    when 'R2D2'
-      'rock'
-    when 'Hal'
-      if (1..75).include?(num)
-        'scissors'
-      else
-        'rock'
-      end
-    when 'Chappie'
-      if (1..50).include?(num)
-        'paper'
-      else
-        'rock'
-      end
-    when 'Sonny'
-      if (1..40).include?(num)
-        'scissors'
-      elsif (41..80).include?(num)
-        'rock'
-      else
-        'paper'
-      end
-    when 'Number 5'
-      Move::VALUES.sample
-    end
-  end
-
-  def choose_by_personality
     case name
     when 'R2D2'
       'rock'
