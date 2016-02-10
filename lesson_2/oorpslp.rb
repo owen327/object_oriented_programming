@@ -133,7 +133,8 @@ class Human < Player
       puts "Please choose rock, paper, scissors, lizard or spock:"
       choice = gets.chomp
       break if Move::VALUES.include? choice
-      puts "Sorry, invalid choice."
+      puts "Sorry, invalid choice. Press enter to continue."
+      gets
     end
     set_move(choice)
   end
