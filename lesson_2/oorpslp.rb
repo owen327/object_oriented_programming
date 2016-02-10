@@ -218,10 +218,8 @@ class RPSGame
   end
 
   def play_again?
-    loop do
-      puts "Would you like to play again? Enter 'y' for yes:"
-      return gets.chomp.downcase == "y" ? true : false
-    end
+    puts "Would you like to play again? Enter 'y' for yes:"
+    return gets.chomp.downcase == "y" ? true : false
   end
 
   def update_scores
