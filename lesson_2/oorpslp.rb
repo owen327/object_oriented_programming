@@ -189,6 +189,25 @@ class Computer < Player
       Move::VALUES.sample
     end
   end
+
+  def choose_by_personality
+    case name
+    when 'R2D2'
+      'rock'
+    when 'Hal'
+      (['rock']*1    + ['paper']*0  + ['scissors']*25 +
+       ['lizard']*10 + ['spock']*10).sample
+    when 'Chappie'
+      (['rock']*5    + ['paper']*5  + ['scissors']*5 +
+       ['lizard']*20 + ['spock']*20).sample
+    when 'Sonny'
+      (['rock']*15   + ['paper']*15 + ['scissors']*15 +
+       ['lizard']*5  + ['spock']*5).sample
+    when 'Number 5'
+      (['rock']*5    + ['paper']*5  + ['scissors']*5 +
+       ['lizard']*5  + ['spock']*5).sample
+    end
+  end
 end
 
 # Game Orchestration Engine
