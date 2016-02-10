@@ -219,7 +219,7 @@ class RPSGame
 
   def play_again?
     puts "Would you like to play again? Enter 'y' for yes:"
-    return gets.chomp.downcase == "y" ? true : false
+    gets.chomp.downcase == "y" ? true : false
   end
 
   def update_scores
@@ -253,6 +253,7 @@ class RPSGame
 
   def update_computer_win_history
     computer.win_history << computer.move.to_s if human.move < computer.move
+    computer.win_history.delete(computer.move.to_s) if human.move > computer.move
   end
 
   def play
