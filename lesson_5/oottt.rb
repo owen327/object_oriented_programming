@@ -86,9 +86,15 @@ end
 
 class Player
   attr_reader :marker
+  attr_accessor :score
 
   def initialize(marker)
     @marker = marker
+    reset_score
+  end
+
+  def reset_score
+    @score = 0
   end
 end
 
@@ -111,24 +117,47 @@ class TTTGame
     display_welcome_message
 
     loop do
-      display_board
 
       loop do
-        current_player_moves
-        break if board.someone_won? || board.full?
+        display_board
+        display_scores
 
-        clear_screen_and_display_board
+        loop do
+          current_player_moves
+          break if board.someone_won? || board.full?
+
+          clear_screen_and_display_board
+        end
+
+        display_result
+        increment_score
+        break if human.score >= 5 || computer.score >= 5
+        reset
       end
-      display_result
+
       break unless play_again?
+      reset_scores
       reset
       display_play_again_message
-    end
 
+    end
     display_goodbye_message
   end
 
   private
+
+  def display_scores
+    puts "The scores are Player: #{human.score}; Computer: #{computer.score}."
+  end
+
+  def increment_score
+    case board.winning_marker
+    when human.marker
+      human.score += 1
+    when computer.marker
+      computer.score += 1
+    end
+  end
 
   def display_welcome_message
     puts "Welcome to Tic Tac Toe!"
@@ -200,6 +229,11 @@ class TTTGame
     board.reset
     @current_marker = FIRST_TO_MOVE
     clear
+  end
+
+  def reset_scores
+    @human.reset_score
+    @computer.reset_score
   end
 
   def display_play_again_message
