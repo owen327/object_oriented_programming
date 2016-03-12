@@ -12,6 +12,10 @@ class Board
     @squares[num].marker = marker
   end
 
+  def [](num)
+    @squares[num]
+  end
+
   def unmarked_keys
     @squares.keys.select { |key| @squares[key].unmarked? }
   end
@@ -54,6 +58,17 @@ class Board
     DISPLAY_BOARD
   end
 
+  def possible_win?(marker)
+    WINNING_LINES.find do |line|
+      @squares.values_at(*line).map(&:marker).count(marker) == 2 &&
+        @squares.values_at(*line).count(&:unmarked?) == 1
+    end
+  end
+
+  def locate_winning_square(marker)
+    possible_win?(marker).find { |square| @squares[square].unmarked? }
+  end
+
   private
 
   def three_identical_markers?(squares)
@@ -85,11 +100,12 @@ class Square
 end
 
 class Player
-  attr_reader :marker
+  attr_reader :marker, :name
   attr_accessor :score
 
-  def initialize(marker)
+  def initialize(name, marker)
     @marker = marker
+    @name = name
     reset_score
   end
 
@@ -99,17 +115,17 @@ class Player
 end
 
 class TTTGame
-  HUMAN_MARKER = 'X'
-  COMPUTER_MARKER = 'O'
-  FIRST_TO_MOVE = HUMAN_MARKER
+  X_MARKER = 'X'
+  O_MARKER = 'O'
 
   attr_reader :board, :human, :computer
 
   def initialize
     @board = Board.new
-    @human = Player.new(HUMAN_MARKER)
-    @computer = Player.new(COMPUTER_MARKER)
-    @current_marker = FIRST_TO_MOVE
+    @human = Player.new(get_human_name, get_human_marker)
+    @computer = Player.new(get_computer_name, get_computer_marker)
+    @first_player = get_first_player
+    @current_marker = @first_player
   end
 
   def play
@@ -117,37 +133,82 @@ class TTTGame
     display_welcome_message
 
     loop do
-
       loop do
         display_board
-        display_scores
 
         loop do
           current_player_moves
           break if board.someone_won? || board.full?
-
           clear_screen_and_display_board
         end
 
-        display_result
+        display_result_of_round
         increment_score
+        display_scores
+        puts "Press enter to continue:"
+        gets
+
         break if human.score >= 5 || computer.score >= 5
-        reset
+        reset_board
       end
 
+      display_result_of_round
+      display_final_results
       break unless play_again?
       reset_scores
-      reset
+      reset_board
       display_play_again_message
-
     end
     display_goodbye_message
   end
 
   private
 
+  def get_human_name
+    name = ''
+    loop do
+      puts "Please enter your name: "
+      name = gets.chomp.capitalize
+      break if !name.empty?
+      puts "Invalid!"
+    end
+    name
+  end
+
+  def get_computer_name
+    ["Megatron", "Soundwave", "Holly", "R2-D2", "Siri"].sample
+  end
+
+  def get_first_player
+    human_first = ''
+    loop do
+      puts "Do you want to go first? (y/n): "
+      human_first = gets.chomp.upcase
+      break if human_first == "Y" || human_first == "N"
+      puts "Please enter 'X' or 'O'"
+    end
+    return human.marker if human_first == "Y"
+    computer.marker
+  end
+
+  def get_human_marker
+    marker = ""
+    loop do
+      puts "Choose your marker 'X' or 'O':"
+      marker = gets.chomp.upcase
+      break if marker == "X" || marker == "O"
+      puts "Please enter 'X' or 'O':"
+    end
+    marker
+  end
+
+  def get_computer_marker
+    return 'O' if human.marker == 'X'
+    'X'
+  end
+
   def display_scores
-    puts "The scores are Player: #{human.score}; Computer: #{computer.score}."
+    puts "The scores are #{human.name}: #{human.score}; #{computer.name}: #{computer.score}."
   end
 
   def increment_score
@@ -160,12 +221,12 @@ class TTTGame
   end
 
   def display_welcome_message
-    puts "Welcome to Tic Tac Toe!"
+    puts "Welcome to Tic Tac Toe!".center(80, "*")
     puts
   end
 
   def display_goodbye_message
-    puts "Thanks for playing Tic Tac Toe! Goodbye!"
+    puts "Thanks for playing Tic Tac Toe! Goodbye!".center(80, "*")
   end
 
   def clear_screen_and_display_board
@@ -174,7 +235,8 @@ class TTTGame
   end
 
   def display_board
-    puts "You're a #{human.marker}. Computer is a #{computer.marker}."
+    puts "#{human.name}'s marker is #{human.marker}"
+    puts "#{computer.name}'s marker is #{computer.marker}"
     puts
     board.draw
     puts
@@ -198,19 +260,37 @@ class TTTGame
   end
 
   def computer_moves
-    board[board.unmarked_keys.sample] = computer.marker
+    square = if board.possible_win?(computer.marker)
+               board.locate_winning_square(computer.marker)
+             elsif board.possible_win?(human.marker)
+               board.locate_winning_square(human.marker)
+             elsif board[5].unmarked?
+               5
+             else
+               board.unmarked_keys.sample
+             end
+    board[square] = computer.marker
   end
 
-  def display_result
+  def display_result_of_round
     clear_screen_and_display_board
 
     case board.winning_marker
     when human.marker
-      puts "You won!"
+      puts "#{human.name} won this round!"
     when computer.marker
-      puts "Computer won!"
+      puts "#{computer.name} won this round!"
     else
-      puts "It's a tie!"
+      puts "This round is a tie!"
+    end
+  end
+
+  def display_final_results
+    case
+    when human.score == 5
+      puts "#{human.name} has reached 5 points and has won this game!".center(80, "*")
+    when computer.score == 5
+      puts "#{computer.name} has reached 5 points and has won this game!".center(80, "*")
     end
   end
 
@@ -225,9 +305,9 @@ class TTTGame
     answer == 'y'
   end
 
-  def reset
+  def reset_board
     board.reset
-    @current_marker = FIRST_TO_MOVE
+    @current_marker = @first_player
     clear
   end
 
@@ -241,12 +321,12 @@ class TTTGame
   end
 
   def current_player_moves
-    if @current_marker == HUMAN_MARKER
+    if @current_marker == human.marker
       human_moves
-      @current_marker = COMPUTER_MARKER
+      @current_marker = computer.marker
     else
       computer_moves
-      @current_marker = HUMAN_MARKER
+      @current_marker = human.marker
     end
   end
 
