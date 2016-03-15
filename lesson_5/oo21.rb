@@ -1,5 +1,6 @@
 class Player
   attr_accessor :cards, :name
+
   def initialize
     @cards = []
     @name = get_name
@@ -20,6 +21,7 @@ class Player
   end
 
   def display_hand
+    puts
     puts " #{name}'s cards: ".center(30, "-")
     puts cards
     puts "Total: #{total}"
@@ -29,14 +31,12 @@ end
 
 class Human < Player
   def get_name
-    name = ''
     loop do
       puts "Please enter your name: "
       name = gets.chomp.capitalize
-      break if !name.empty?
+      return name unless name.empty?
       puts "Your entry is invalid, try again."
     end
-    name
   end
 end
 
@@ -127,7 +127,6 @@ class Game
 
   def human_turn
     puts "It's #{human.name}'s turn..."
-
     loop do
       answer = hit_or_stay
       if answer == 's'
@@ -143,8 +142,8 @@ class Game
   end
 
   def dealer_turn
+    puts
     puts "It's #{dealer.name}'s turn...'"
-
     loop do
       break if dealer.busted?
       if dealer.total >= 17
