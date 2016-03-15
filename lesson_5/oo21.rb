@@ -86,17 +86,19 @@ class Game
   attr_accessor :deck
 
   def initialize
+    display_welcome_message
     @human = Human.new
     @dealer = Dealer.new
     @deck = Deck.new
   end
 
   def deal_cards
-    2.times { human.cards << @deck.cards.pop }
-    2.times { dealer.cards << @deck.cards.pop }
+    2.times { human.cards << deck.cards.pop }
+    2.times { dealer.cards << deck.cards.pop }
   end
 
   def show_initial_cards
+    system 'clear'
     human.display_hand
     puts " #{dealer.name}'s cards: ".center(30, "-")
     puts dealer.cards.first.show_blank
@@ -118,7 +120,7 @@ class Game
     loop do
       puts "Enter 'h' to hit 's' to stay?"
       answer = gets.chomp.downcase
-      return answer if answer == 'h' || answer == 's'
+      return answer if %w(h s).include? answer
       puts "Your answer is invalid. Please try again..."
     end
   end
@@ -132,9 +134,10 @@ class Game
         puts "#{human.name} stays!"
         break
       end
+      system 'clear'
       human.cards << deck.cards.pop
-      puts "#{human.name} hits!"
       human.display_hand
+      puts "#{human.name} hits!"
       break if human.busted?
     end
   end
@@ -143,10 +146,9 @@ class Game
     puts "It's #{dealer.name}'s turn...'"
 
     loop do
-      if dealer.total >= 17 && !dealer.busted?
+      break if dealer.busted?
+      if dealer.total >= 17
         puts "#{dealer.name} stays!"
-        break
-      elsif dealer.busted?
         break
       else
         puts "#{dealer.name} hits!"
@@ -156,14 +158,13 @@ class Game
   end
 
   def show_result
-    case
-    when human.busted?
+    if human.busted?
       puts "It looks like #{human.name} busted! #{dealer.name} wins!"
-    when dealer.busted?
+    elsif dealer.busted?
       puts "It looks like #{dealer.name} busted! #{human.name} wins!"
-    when human.total > dealer.total
+    elsif human.total > dealer.total
       puts "It looks like #{human.name} wins!"
-    when dealer.total > human.total
+    elsif dealer.total > human.total
       puts "It looks like #{dealer.name} wins!"
     else
       puts "It looks like it's a tie!"
@@ -171,14 +172,12 @@ class Game
   end
 
   def play_again?
-    answer = nil
     loop do
       puts "Would you like to play again? (y/n)"
       answer = gets.chomp.downcase
-      break if %w(y n).include? answer
+      break(answer == 'y') if %w(y n).include? answer
       puts "Sorry, must be y or n"
     end
-    answer == 'y'
   end
 
   def reset
@@ -189,16 +188,11 @@ class Game
   end
 
   def start
-    display_welcome_message
     loop do
       deal_cards
       show_initial_cards
       human_turn
       dealer_turn unless human.busted?
-      puts 'Press enter to contintue...'
-      gets
-      system 'clear'
-      human.display_hand
       dealer.display_hand
       show_result
       break unless play_again?
